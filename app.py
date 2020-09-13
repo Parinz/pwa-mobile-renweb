@@ -1,6 +1,8 @@
 from flask import Flask, render_template, url_for, flash, redirect, request
+from main import main
 
 app = Flask(__name__)
+app.register_blueprint(main, url_prefix="/app/")
 
 ##### DEFUALT TO HTTPS ENABLE ON PRODUCTION
 
@@ -21,12 +23,5 @@ def home_page():
 @app.route("/guide")
 def guide():
     return render_template("guide.html")
-
-### App Routes
-
-@app.route("/app")
-def main_app():
-    #Need scraping function
-    return render_template("app.html")
 
 
