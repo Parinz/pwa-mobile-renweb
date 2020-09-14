@@ -1,8 +1,11 @@
 from flask import Flask, render_template, url_for, flash, redirect, request
 from main import main
 
+
 app = Flask(__name__)
 app.register_blueprint(main, url_prefix="/app/")
+app.secret_key = "oppwiZtFNM5UOH011tqISvDoi8L5ehxFFsReI1iebD2DrY1wha--ZwVIf0Z47uuTovGlXr7bHDjsmOUGVaFCqWR7zBiAuZymRdP0_cNk10X26J6skfTZI1bh1shJUdvK7fisKg"
+
 
 ##### DEFUALT TO HTTPS ENABLE ON PRODUCTION
 

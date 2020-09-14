@@ -43,6 +43,10 @@ body {
   background-color: #f5f5f5;
 }
 
+svg {
+  display: block;
+  margin: auto;
+}
 .form-signin {
   width: 100%;
   max-width: 330px;
@@ -76,14 +80,17 @@ body {
     </style>
     <!-- Custom styles for this template -->
   </head>
-  <body class="text-center">
+  <body class="text-center"> 
     <form class="form-signin">
-        <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="d-block mb-2" role="img" viewBox="0 0 24 24" focusable="false"><title>Product</title><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94"/></svg>  
-  <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-  <label for="inputEmail" class="sr-only">Email address</label>
-  <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
-  <label for="inputPassword" class="sr-only">Password</label>
-  <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+        <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="d-block mb-2" role="img" viewBox="0 0 24 24" focusable="false"><title>Product</title><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94"/></svg>
+        <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+
+  <label for="district-code" class="sr-only">District Code</label>
+  <input name="DistrictCode" id="district-code" class="form-control" placeholder="District Code" autofocus>
+  <label for="username" class="sr-only">Email address</label>
+  <input name="UserName" id="username" class="form-control" placeholder="Username">
+  <label for="password" class="sr-only">Password</label>
+  <input name="Password" id="password" class="form-control" placeholder="Password">
   <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
   <p class="mt-5 mb-3 text-muted"> Parinthapat &copy; 2020-2020</p>
 </form>
