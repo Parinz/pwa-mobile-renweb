@@ -1,3 +1,6 @@
+import requests
+from bs4 import BeautifulSoup
+
 def Login():
         District_Code = self.district_code.text
         Username = self.username.text
