@@ -13,7 +13,7 @@ def login():
         if Values == -1:
             return render_template_string("Wrong Pass")
         else:
-            return render_template_string("Functioning Properly")
+            return render_template_string(f"Functioning Properly {Values[0]} {Values[1]} {Values[2]}")
     else:
         return render_template("signin.html")
 
