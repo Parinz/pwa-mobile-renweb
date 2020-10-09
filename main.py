@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, session, url_for, redirect
-from datetime import timedelta
+from flask import Blueprint, render_template, request, url_for, redirect, flash, make_response
+from datetime import datetime, timedelta
 from flask.templating import render_template_string
 
 import authenticate
@@ -8,19 +8,44 @@ main = Blueprint("main", __name__, static_folder="static/main/", template_folder
 
 @main.route("/", methods=["POST", "GET"])
 def login():
-    if request.method == "POST":
+    if 'Exist' in request.cookies:
+        return redirect(url_for('main.dashboard'))
+    
+    elif request.method == "POST":
         Values = authenticate.Login(request.form['DistrictCode'], request.form['Username'], request.form['Password'])
         if Values == -1:
-            return render_template_string("Wrong Pass")
+            flash("Username, or Password is incorrect.", category="error")
+            return redirect(url_for("main.login"))
+        elif Values == -2:
+            flash("Network Error/Wrong District Code. Please try again.", category="error")
+            return redirect(url_for("main.login"))
         else:
-            return render_template_string(f"Functioning Properly {Values[0]} {Values[1]} {Values[2]}")
+            # Don't touch it please
+            expire_date = datetime.now()
+            expire_date += timedelta(days=360)
+
+            res = make_response(url_for('main.dashboard'), 200)
+
+            # Set secure to true to deployment
+            res.set_cookie("Exist", '1', expires=expire_date, secure=False)
+            res.set_cookie("DistrictCode", Values[0], expires=expire_date, secure=False)
+            res.set_cookie("Username", Values[1], expires=expire_date, secure=False)
+            res.set_cookie("Password", Values[2], expires=expire_date, secure=False)
+
+            return res
     else:
         return render_template("signin.html")
 
-@main.route("/cookies", methods=["GET"])
-def cookies():
-    return render_template_string("<h1> IT WORKS </h1>")
 
-@main.route("/home/", methods=["POST", "GET"])
-def home():
-    pass
+
+@main.route("/dashboard/", methods=["GET"])
+def dashboard():
+    cookies = request.cookies
+    if 'Exist' in cookies:
+        DistrictCode = cookies.get('DistrictCode')
+        Username = cookies.get('Username')
+        Password = cookies.get('Password')
+        return render_template_string(f"{DistrictCode} {Username} {Password}")
+    
+    else:
+        return redirect(url_for('main.login'))

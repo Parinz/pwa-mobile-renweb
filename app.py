@@ -21,6 +21,9 @@ app.secret_key = "oppwiZtFNM5UOH011tqISvDoi8L5ehxFFsReI1iebD2DrY1wha--ZwVIf0Z47u
 
 @app.route("/")
 def home_page():
+    if 'Exist' in request.cookies:
+        return redirect(url_for('main.dashboard'))
+    
     return render_template("home.html")
 
 @app.route("/guide")

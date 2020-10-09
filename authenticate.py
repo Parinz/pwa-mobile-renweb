@@ -33,7 +33,7 @@ def Login(District_Code, Username, Password):
             else:
                 return -1
     except:
-        return -1
+        return -2
 
 def GetData():
   if District_Code != "" and Username != "" and Password != "":

@@ -77,11 +77,111 @@ svg {
   border-top-right-radius: 0;
 }
 
+.loader {
+  margin:auto;
+  margin-top: 100px;
+  margin-bottom: 100px;
+  border: 16px solid #bdc3c7;
+  width: 120px;
+  height: 120px;
+  border-top-color: #1abc9c;
+  border-bottom-color: #3498db;
+  border-radius: 50%;
+  animation: coloredspin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0%{
+    transform: rotate(0deg);
+  }
+  100%{
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes coloredspin {
+  0%{
+    transform: rotate(0deg) scale(1);
+    border-top-color: #1abc9c;
+    border-bottom-color: #1abc9c;
+  }
+  25% {
+    border-top-color: #2ecc71;
+    border-bottom-color: #2ecc71;
+  }
+  50% {
+    transform: rotate(360deg) scale(1.05);
+    border-top-color: #3498db;
+    border-bottom-color: #3498db;
+  }
+  75% {
+    border-top-color: #9b59b6;
+    border-bottom-color: #9b59b6;
+  }
+  100%{
+    transform: rotate(720deg) scale(1);
+    border-top-color: #1abc9c;
+    border-bottom-color: #1abc9c;
+  }
+}
+
+@keyframes appear {
+  0%{
+    opacity: 0;
+  }
+  100%{
+    opacity: 1;
+  }
+}
     </style>
     <!-- Custom styles for this template -->
+
+    <script>function func() {
+      var x = document.getElementById("loader");
+      if (x.style.display === "none") {
+        x.style.display = "block";
+      } else {
+        x.style.display = "none";
+      }
+      var y = document.getElementById("district-code");
+      if (y.style.display === "none") {
+        y.style.display = "block";
+      } else {
+        y.style.display = "none";
+      }
+      var z = document.getElementById("username");
+      if (z.style.display === "none") {
+        z.style.display = "block";
+      } else {
+        z.style.display = "none";
+      }
+      var k = document.getElementById("password");
+      if (k.style.display === "none") {
+        k.style.display = "block";
+      } else {
+        k.style.display = "none";
+      }
+      var j = document.getElementById("button");
+      if (j.style.display === "none") {
+        j.style.display = "block";
+      } else {
+        j.style.display = "none";
+      }
+    } </script>
   </head>
-  <body class="text-center"> 
+  <body class="text-center">
     <form class="form-signin" action="/app/" method="POST">
+      {% block flash %}
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for msg in messages %}
+          <div class="alert alert-danger" role="alert">
+            {{msg}}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    {% endblock %} 
         <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="d-block mb-2" role="img" viewBox="0 0 24 24" focusable="false"><title>Product</title><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94"/></svg>
         <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
 
@@ -91,7 +191,8 @@ svg {
   <input name="Username" id="username" class="form-control" placeholder="Username">
   <label for="password" class="sr-only">Password</label>
   <input name="Password" id="password" type="password" class="form-control" placeholder="Password">
-  <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+  <button id="button" onclick="func()" class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+  <div class="loader" id="loader" style="display:none"></div>
   <p class="mt-5 mb-3 text-muted"> Parinthapat &copy; 2020-2020</p>
 </form>
 </body>
