@@ -8,9 +8,11 @@ main = Blueprint("main", __name__, static_folder="static/main/", template_folder
 
 @main.route("/", methods=["POST", "GET"])
 def login():
-    if 'Exist' in request.cookies:
+    # Check to see if cookie is in or not
+    if 'Exist' in request.cookies and 'DistrictCode' in request.cookies:
         return redirect(url_for('main.dashboard'))
-    
+
+    # Validation of Login
     elif request.method == "POST":
         Values = authenticate.Login(request.form['DistrictCode'], request.form['Username'], request.form['Password'])
         if Values == -1:
@@ -34,6 +36,7 @@ def login():
 
             return res
     else:
+        # If not a post request then show signin page
         return render_template("signin.html")
 
 
