@@ -156,13 +156,13 @@ header.masthead {
   padding-top: 150px;
   padding-bottom: 100px;
   color: white;
- background: linear-gradient(-45deg, #ee7752, #e73c7e, rgb(224, 28, 208), #23a6d5, #23d5ab);
+ background: linear-gradient(-55deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
  background-size: 600% 600%;
 
-    -webkit-animation: Gradient 3s ease infinite;
-    -moz-animation: Gradient 3s ease infinite;
-    -o-animation: Gradient 3s ease infinite;
-    animation: Gradient 3s ease infinite;
+    -webkit-animation: Gradient 10s ease infinite;
+    -moz-animation: Gradient 10s ease infinite;
+    -o-animation: Gradient 10s ease infinite;
+    animation: Gradient 10s ease infinite;
 }
 
 @-webkit-keyframes Gradient {
