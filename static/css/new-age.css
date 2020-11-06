@@ -86,7 +86,7 @@ section h2 {
 }
 
 #mainNav .navbar-nav > li > a {
-  font-size: 11px;
+  font-size: 13px;
   font-family: 'Lato', 'Helvetica', 'Arial', 'sans-serif';
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -156,9 +156,36 @@ header.masthead {
   padding-top: 150px;
   padding-bottom: 100px;
   color: white;
-  background: url("../img/bg-pattern.png"), #7b4397;
-  background: url("../img/bg-pattern.png"), linear-gradient(to left, #7b4397, #dc2430);
+ background: linear-gradient(-45deg, #ee7752, #e73c7e, rgb(224, 28, 208), #23a6d5, #23d5ab););
+ background-size: 600% 600%;
+
+    -webkit-animation: Gradient 8s ease infinite;
+    -moz-animation: Gradient 8s ease infinite;
+    -o-animation: Gradient 8s ease infinite;
+    animation: Gradient 8s ease infinite;
 }
+
+@-webkit-keyframes Gradient {
+    0%{background-position:67% 0%}
+    50%{background-position:34% 100%}
+    100%{background-position:67% 0%}
+}
+@-moz-keyframes Gradient {
+    0%{background-position:67% 0%}
+    50%{background-position:34% 100%}
+    100%{background-position:67% 0%}
+}
+@-o-keyframes Gradient {
+    0%{background-position:67% 0%}
+    50%{background-position:34% 100%}
+    100%{background-position:67% 0%}
+}
+@keyframes Gradient {
+    0%{background-position:67% 0%}
+    50%{background-position:34% 100%}
+    100%{background-position:67% 0%}
+}
+
 
 header.masthead .header-content {
   max-width: 500px;
