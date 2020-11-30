@@ -26,7 +26,7 @@ def login():
             expire_date = datetime.now()
             expire_date += timedelta(days=360)
 
-            res = make_response(url_for('main.dashboard'), 200)
+            res = make_response(redirect(url_for('main.dashboard'), 200))
 
             # Set secure to true to deployment
             res.set_cookie("Exist", '1', expires=expire_date, secure=False)
