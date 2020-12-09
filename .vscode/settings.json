@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "/home/parin/anaconda3/envs/Flask-Web-Dev/bin/python",
+    "python.pythonPath": "/opt/anaconda3/envs/Flask-Web-Dev/bin/python",
     "python.formatting.provider": "black"
 }
