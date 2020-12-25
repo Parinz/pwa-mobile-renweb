@@ -59,8 +59,9 @@ def GetData(District_Code, Username, Password):
             ).text
             page = BeautifulSoup(page, 'lxml')
             page = page.find_all("table")
-            g_list = []
+            foobar = []
             for tables in page:
+                g_list = []
                 tableBody = tables.find_all("tbody")
                 for tr in tableBody:
                     for foo in tr.find_all("tr"):
@@ -68,5 +69,6 @@ def GetData(District_Code, Username, Password):
                         row = [i.text for i in td]
                         row = list(map(lambda s: s.strip("\n"), row))
                         g_list.append(row)
-            return g_list
+                foobar.append(g_list)
 
+            return foobar
