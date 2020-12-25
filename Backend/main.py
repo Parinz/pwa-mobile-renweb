@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, Response 
 from fastapi.middleware.cors import CORSMiddleware
-from authenticate import Login
+from authenticate import Login, GetData
 
 # Defining Api Settings
 app = FastAPI() 
@@ -23,7 +23,7 @@ app.add_middleware(
 # Check Server Status
 @app.get("/")
 async def root():
-    return [{"Server": True}, {"Renweb-Servers": True}, {"Authentication": True}, {"Frontend": False}]
+    return [{"Server": True}, {"Renweb-Servers": True}, {"Authentication": True}, {"Data_Transmission": True}, {"Frontend": False}]
 
 # Authentication Protocol
 @app.get("/auth/{Client_Code}/{Username}/{Password}")
@@ -36,6 +36,10 @@ async def logon(Client_Code, Username, Password):
     else:
         return {"Status": Status}
 
-@app.get('/auth/{Client_Code}/{Username}/{Password}/grade')
-async def get_grade(Client_Code, Username, Password):
+@app.get('/auth/{Client_Code}/{Username}/{Password}/getdata')
+async def get_data(Client_Code, Username, Password):
+    
+    Grade_List =  GetData(Client_Code, Username, Password)
 
+    Data_dict = [{"Grades": Grade_List}]
+    return Data_dict 

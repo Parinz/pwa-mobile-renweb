@@ -34,36 +34,39 @@ def Login(District_Code, Username, Password):
     except:
         return -2
 
-# def GetData():
-#   if District_Code != "" and Username != "" and Password != "":
-#         with requests.Session() as c:
-#             District_Code = District_Code.upper()
-#             Client_Code = District_Code.lower()
-#             UserType = "PARENTSWEB-PARENT"
-#             Submit = "Login"
-#             formMethod = "login"
-#             url = f"https://{Client_Code}.client.renweb.com/pwr/"
+def GetData(District_Code, Username, Password):
+  if District_Code != "" and Username != "" and Password != "":
+        with requests.Session() as c:
+            District_Code = District_Code.upper()
+            Client_Code = District_Code.lower()
+            UserType = "PARENTSWEB-PARENT"
+            Submit = "Login"
+            formMethod = "login"
+            url = f"https://{Client_Code}.client.renweb.com/pwr/"
 
-#             c.get(url)
-#             login_data = {
-#                 "DistrictCode": District_Code,
-#                 "UserName": Username,
-#                 "Password": Password,
-#                 "UserType": UserType,
-#                 "Submit": Submit,
-#                 "formMethod": formMethod,
-#             }
-#             c.post(url, data=login_data)
-#             page = c.get(
-#                 f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"
-#             ).text
-#             page = BeautifulSoup(page)
-#             page = page.find("table")
+            c.get(url)
+            login_data = {
+                "DistrictCode": District_Code,
+                "UserName": Username,
+                "Password": Password,
+                "UserType": UserType,
+                "Submit": Submit,
+                "formMethod": formMethod,
+            }
+            c.post(url, data=login_data)
+            page = c.get(
+                f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"
+            ).text
+            page = BeautifulSoup(page, 'lxml')
+            page = page.find_all("table")
+            g_list = []
+            for tables in page:
+                tableBody = tables.find_all("tbody")
+                for tr in tableBody:
+                    for foo in tr.find_all("tr"):
+                        td = foo.find_all("td")
+                        row = [i.text for i in td]
+                        row = list(map(lambda s: s.strip("\n"), row))
+                        g_list.append(row)
+            return g_list
 
-#             tablerows = page.find_all("tr")
-#             for tr in tablerows:
-#                 td = tr.find_all("td")
-#                 row = [i.text for i in td]
-#                 row = tuple(list(map(lambda s: s.strip("\n"), row)))
-#                 g_list.append(row)
-#                 print(row)
