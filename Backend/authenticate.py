@@ -1,6 +1,8 @@
 from flask.templating import render_template_string
 import requests
+from multiprocessing import Process, Manager
 from bs4 import BeautifulSoup
+import re
 
 def Login(District_Code, Username, Password):
     try:
@@ -34,13 +36,12 @@ def Login(District_Code, Username, Password):
     except:
         return -2
 
-def GetData(Client_Code, Request_Object):
+def GetData(Client_Code, Request_Object, foolist):
             page = Request_Object.get(
                 f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"
             ).text
             page = BeautifulSoup(page, 'lxml')
             page = page.find_all("table")
-            foobar = []
             for tables in page:
                 g_list = []
                 tableBody = tables.find_all("tbody")
@@ -50,12 +51,42 @@ def GetData(Client_Code, Request_Object):
                         row = [i.text for i in td]
                         row = list(map(lambda s: s.strip("\n"), row))
                         g_list.append(row)
-                foobar.append(g_list)
+                foolist.append(g_list)
 
-            return foobar
+def gradeBook(District_Code, Username, Password):
+    with requests.Session() as c:
+        District_Code = District_Code.upper()
+        Client_Code = District_Code.lower()
+        UserType = "PARENTSWEB-PARENT"
+        Submit = "Login"
+        formMethod = "login"
+        url = f"https://{Client_Code}.client.renweb.com/pwr/"
 
+        c.get(url)
+        login_data = {
+            "DistrictCode": District_Code,
+            "UserName": Username,
+            "Password": Password,
+            "UserType": UserType,
+            "Submit": Submit,
+            "formMethod": formMethod,
+        }
+        c.post(url, data=login_data)
+        page = c.get(f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm").text
+        page = BeautifulSoup(page, 'lxml')
+        links = []
+        page = page.find_all("table")        
+        
+        for tables in page:
+            tableBody = tables.find_all("tbody")
+            for tr in tableBody:
+                for foo in tr.find_all("tr"):
+                    for link in foo.findAll('a', attrs={'href': re.compile("^grades.cfm")}):
+                        links.append(link.get('href'))
+        return links
+        
 def globalGetData(District_Code, Username, Password):
-    if District_Code != "" and Username != "" and Password != "":
+    with Manager() as manager:
         with requests.Session() as c:
             District_Code = District_Code.upper()
             Client_Code = District_Code.lower()
@@ -75,5 +106,11 @@ def globalGetData(District_Code, Username, Password):
             }
             c.post(url, data=login_data)
 
-            return GetData(Client_Code, c)
+            Grade_list = manager.list()
+
+            getData_process = Process(target=GetData, args=(Client_Code, c, Grade_list))
+            getData_process.start()
+
+            getData_process.join()
+            return list(Grade_list) 
 
