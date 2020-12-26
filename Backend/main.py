@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, Response 
 from fastapi.middleware.cors import CORSMiddleware
-from authenticate import Login, GetData
+from authenticate import Login, globalGetData 
 
 # Defining Api Settings
 app = FastAPI() 
@@ -39,7 +39,7 @@ async def logon(Client_Code, Username, Password):
 @app.get('/auth/{Client_Code}/{Username}/{Password}/getdata')
 async def get_data(Client_Code, Username, Password):
     
-    Grade_List =  GetData(Client_Code, Username, Password)
+    Grade_List =  globalGetData(Client_Code, Username, Password)
 
     Data_dict = [{"Grades": Grade_List}]
     return Data_dict 
