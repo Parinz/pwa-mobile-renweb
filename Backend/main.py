@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, Response 
 from fastapi.middleware.cors import CORSMiddleware
-from authenticate import Login, globalGetData, gradeBook 
+from fastapi.responses import ORJSONResponse
+from fastapi.responses import HTMLResponse
+from authenticate import Login, globalGetData, gradeBook, subjectGradeBook 
 
 # Defining Api Settings
 app = FastAPI() 
@@ -21,12 +23,12 @@ app.add_middleware(
 ##########################################################################################################
 
 # Check Server Status
-@app.get("/")
+@app.get("/", response_class=ORJSONResponse)
 async def root():
     return [{"Server": True}, {"Renweb-Servers": True}, {"Authentication": True}, {"Data_Transmission": True}, {"Frontend": False}]
 
 # Authentication Protocol
-@app.get("/auth/{Client_Code}/{Username}/{Password}")
+@app.get("/auth/{Client_Code}/{Username}/{Password}", response_class=ORJSONResponse)
 async def logon(Client_Code, Username, Password):
     Status = Login(Client_Code, Username, Password)
     if Status == -1:
@@ -36,16 +38,19 @@ async def logon(Client_Code, Username, Password):
     else:
         return {"Status": Status}
 
-@app.get('/auth/{Client_Code}/{Username}/{Password}/getData')
+@app.get('/auth/{Client_Code}/{Username}/{Password}/getData', response_class=ORJSONResponse)
 async def get_data(Client_Code, Username, Password):
     
-    Grade_List =  globalGetData(Client_Code, Username, Password)
+    Grade_List, Urls_list =  globalGetData(Client_Code, Username, Password)
     
-    Data_dict = {"Grades": Grade_List}
+    Data_dict = [{"Grades": Grade_List}, {"Urls": Urls_list}]
     return Data_dict 
 
 @app.get('/auth/{Client_Code}/{Username}/{Password}/getData/grade_book')
 async def get_grade_book(Client_Code, Username, Password):
     return gradeBook(Client_Code, Username, Password)
 
+@app.get('/auth/{Client_Code}/{Username}/{Password}/{Student_ID}/{Class_ID}/{Term_ID}/', response_class=HTMLResponse)
+async def report_card(Client_Code, Username, Password, Student_ID, Class_ID, Term_ID):
+    return subjectGradeBook(Client_Code, Username, Password, Student_ID, Class_ID, Term_ID)
 
