@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from fastapi.responses import HTMLResponse
-from authenticate import Login, globalGetData, gradeBook, subjectGradeBook 
+from authenticate import Login, globalGetData, gradeBook, subjectGradeBook, globalGetGradeBook 
 
 # Defining Api Settings
 app = FastAPI() 
@@ -54,3 +54,6 @@ async def get_grade_book(Client_Code, Username, Password):
 async def report_card(Client_Code, Username, Password, Student_ID, Class_ID, Term_ID):
     return subjectGradeBook(Client_Code, Username, Password, Student_ID, Class_ID, Term_ID)
 
+@app.get('/auth/{Client_Code}/{Username}/{Password}/reportCard/{Subject}', response_class=HTMLResponse)
+async def report(Client_Code, Username, Password, Subject: int):
+    return globalGetGradeBook(Client_Code, Username, Password, Subject)
