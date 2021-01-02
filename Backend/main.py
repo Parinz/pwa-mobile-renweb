@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Depends, Response 
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from fastapi.responses import HTMLResponse
-from authenticate import Login, globalGetData, gradeBook, subjectGradeBook, globalGetGradeBook 
+from authenticate import Login, globalGetData, globalGetGradeBook 
 
 # Defining Api Settings
 app = FastAPI() 
@@ -36,7 +36,7 @@ async def logon(Client_Code, Username, Password):
     elif Status == -2:
         return {"Status": "Network Error or Wrong District Code"}
     else:
-        return {"Status": Status}
+        return {"Name": Status}
 
 @app.get('/auth/{Client_Code}/{Username}/{Password}/getData', response_class=ORJSONResponse)
 async def get_data(Client_Code, Username, Password):
@@ -45,14 +45,6 @@ async def get_data(Client_Code, Username, Password):
     
     Data_dict = [{"Grades": Grade_List}, {"Urls": Urls_list}]
     return Data_dict 
-
-@app.get('/auth/{Client_Code}/{Username}/{Password}/getData/grade_book')
-async def get_grade_book(Client_Code, Username, Password):
-    return gradeBook(Client_Code, Username, Password)
-
-@app.get('/auth/{Client_Code}/{Username}/{Password}/{Student_ID}/{Class_ID}/{Term_ID}/', response_class=HTMLResponse)
-async def report_card(Client_Code, Username, Password, Student_ID, Class_ID, Term_ID):
-    return subjectGradeBook(Client_Code, Username, Password, Student_ID, Class_ID, Term_ID)
 
 @app.get('/auth/{Client_Code}/{Username}/{Password}/reportCard/{Subject}', response_class=HTMLResponse)
 async def report(Client_Code, Username, Password, Subject: int):
