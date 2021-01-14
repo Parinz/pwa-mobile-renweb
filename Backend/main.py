@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from fastapi.responses import HTMLResponse
-from authenticate import Login, globalGetData, globalGetGradeBook 
+from authenticate import Login, globalGetData, globalGetGradeBook
 
 # Defining Api Settings
-app = FastAPI() 
+app = FastAPI()
 
 origins = [
     "*",
@@ -38,14 +38,14 @@ async def logon(Client_Code, Username, Password):
     else:
         return {"Name": Status}
 
+
 @app.get('/auth/{Client_Code}/{Username}/{Password}/getData', response_class=ORJSONResponse)
 async def get_data(Client_Code, Username, Password):
-    
-    Grade_List, Urls_list =  globalGetData(Client_Code, Username, Password)
-    
+    Grade_List, Urls_list = globalGetData(Client_Code, Username, Password)
     Data_dict = [{"Grades": Grade_List}, {"Urls": Urls_list}]
-    return Data_dict 
+    return Data_dict
 
-@app.get('/auth/{Client_Code}/{Username}/{Password}/reportCard/{Subject}', response_class=HTMLResponse)
-async def report(Client_Code, Username, Password, Subject: int):
-    return globalGetGradeBook(Client_Code, Username, Password, Subject)
+
+@app.get('/auth/{Client_Code}/{Username}/{Password}/reportCard/{Student}/{Subject}/{Term}', response_class=HTMLResponse)
+async def report(Client_Code, Username, Password, Student: int, Subject: int, Term: int):
+    return globalGetGradeBook(Client_Code, Username, Password, Student, Subject, Term)
