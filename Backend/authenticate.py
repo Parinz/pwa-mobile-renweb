@@ -6,14 +6,15 @@ from multiprocessing import Process, Manager
 import re
 import requests
 from bs4 import BeautifulSoup
+from OrderedSet import OrderedSet
 
 
 class ClassSubject:
     def __init__(self, urlList, districtCode):
         self.districtCode = districtCode
-        self.students = set()
-        self.classes = set()
-        self.terms = set()
+        self.students = OrderedSet([])
+        self.classes = OrderedSet([])
+        self.terms = OrderedSet([])
 
         for url in urlList:
             self.link = url.split('?')[1]
