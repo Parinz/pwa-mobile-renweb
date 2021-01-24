@@ -41,8 +41,8 @@ async def logon(Client_Code, Username, Password):
 
 @app.get('/auth/{Client_Code}/{Username}/{Password}/getData', response_class=ORJSONResponse)
 async def get_data(Client_Code, Username, Password):
-    Grade_List, Urls_list = globalGetData(Client_Code, Username, Password)
-    Data_dict = [{"Grades": Grade_List}, {"Urls": Urls_list}]
+    Grade_List = globalGetData(Client_Code, Username, Password)
+    Data_dict = {"Grades": Grade_List}
     return Data_dict
 
 

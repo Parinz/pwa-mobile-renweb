@@ -157,19 +157,14 @@ def globalGetData(District_Code, Username, Password):
             Auth(District_Code, Username, Password, c)
 
             Grade_list = manager.list()
-            Urls_list = manager.list()
 
             getData_process = Process(
                 target=GetData, args=(District_Code.lower(), c, Grade_list))
             getData_process.start()
 
-            gradeBook_process = Process(
-                target=gradeBook, args=(District_Code, c, Urls_list))
-            gradeBook_process.start()
 
             getData_process.join()
-            gradeBook_process.join()
-            return list(Grade_list), list(Urls_list)
+            return list(Grade_list)
 
 
 def globalGetGradeBook(District_Code, Username, Password, Student: int, Subject: int, Term: int):
