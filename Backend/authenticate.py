@@ -41,50 +41,6 @@ class ClassSubject:
     def getGradeList(self):
         return self.classes
 
-
-def Login(District_Code, Username, Password):
-    '''
-    The first logon method for authenticating
-    '''
-    try:
-        with requests.Session() as c:
-            District_Code = District_Code.upper()
-            Client_Code = District_Code.lower()
-            UserType = "PARENTSWEB-PARENT"
-            Submit = "Login"
-            formMethod = "login"
-            url = f"https://{Client_Code}.client.renweb.com/pwr/"
-            c.get(url)
-            login_data = {
-                "DistrictCode": District_Code,
-                "UserName": Username,
-                "Password": Password,
-                "UserType": UserType,
-                "Submit": Submit,
-                "formMethod": formMethod,
-            }
-            c.post(url, data=login_data)
-            urlpath = c.get(
-                f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"
-            )
-
-            if (urlpath.url == f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"):
-
-                page = c.get(
-                    f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm").text
-
-                soup = BeautifulSoup(page, 'lxml')
-
-                Name = soup.find("div", {"class": "pwr_user-name"})
-
-                return Name.text
-
-            else:
-                return -1
-    except:
-        return -2
-
-
 def Auth(District_Code, Username, Password, c):
     '''
     Base Auth Method
@@ -105,6 +61,36 @@ def Auth(District_Code, Username, Password, c):
         "formMethod": formMethod,
     }
     c.post(url, data=login_data)
+
+
+def Login(District_Code, Username, Password):
+    '''
+    The first logon method for authenticating
+    '''
+    try:
+        with requests.Session() as c:
+            Auth(District_Code, Username, Password, c)
+            urlpath = c.get(
+                f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"
+            )
+
+            if (urlpath.url == f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"):
+
+                page = c.get(
+                    f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm").text
+
+                soup = BeautifulSoup(page, 'lxml')
+
+                Name = soup.find("div", {"class": "pwr_user-name"})
+                Calendar = soup.find("")
+
+                return Name.text
+
+            else:
+                return -1
+    except:
+        return -2
+
 
 
 def GetData(Client_Code, Request_Object, foolist):
