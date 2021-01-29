@@ -155,7 +155,7 @@ def Login(District_Code: str, Username: str, Password: str):
         return -2
 
 
-def GetData(Client_Code, Request_Object, foolist):
+def getSubjectList(Client_Code, Request_Object, foolist):
     '''
     Get the lists of subjects that the students have
     '''
@@ -176,7 +176,7 @@ def GetData(Client_Code, Request_Object, foolist):
         foolist.append(g_list)
 
 
-def gradeBook(District_Code, Request_Object, foolist):
+def getSubjectUrls(District_Code, Request_Object, foolist):
     Client_Code = District_Code.lower()
     page = Request_Object.get(
         f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm").text
@@ -193,43 +193,34 @@ def gradeBook(District_Code, Request_Object, foolist):
     return foolist
 
 
-def subjectGradeBook(District_Code, Username, Password, Student_ID, Class_ID, Term_ID):
-    with requests.Session() as c:
-        Auth(District_Code, Username, Password, c)
-        url = f"https://{District_Code.lower()}.client.renweb.com/pwr/NAScopy/Gradebook/GradeBookProgressReport-PW.cfm?District={District_Code}&StudentID={Student_ID}&ClassID={Class_ID}&TermID={Term_ID}&SchoolCode={District_Code.split('-')[0]}"
-        page = c.get(url).text
-
-        return page
-
-
-def globalGetData(District_Code, Username, Password):
+def getAllClassesList(District_Code, Username, Password):
     with Manager() as manager:
         with requests.Session() as c:
             Auth(District_Code, Username, Password, c)
 
             Grade_list = manager.list()
 
-            getData_process = Process(
-                target=GetData, args=(District_Code.lower(), c, Grade_list))
-            getData_process.start()
+            getSubjectListProcess = Process(
+                target=getSubjectList, args=(District_Code.lower(), c, Grade_list))
+            getSubjectListProcess.start()
 
 
-            getData_process.join()
+            getSubjectListProcess.join()
             return list(Grade_list)
 
 
-def globalGetGradeBook(District_Code, Username, Password, Student: int, Subject: int, Term: int):
+def getSubjectGradeBook(District_Code, Username, Password, Student: int, Subject: int, Term: int):
     with Manager() as manager:
         with requests.Session() as c:
             Auth(District_Code, Username, Password, c)
 
             Urls_list = manager.list()
 
-            gradeBook_process = Process(
-                target=gradeBook, args=(District_Code, c, Urls_list))
-            gradeBook_process.start()
+            getSubjectUrlProcess = Process(
+                target=getSubjectUrls, args=(District_Code, c, Urls_list))
+            getSubjectUrlProcess.start()
 
-            gradeBook_process.join()
+            getSubjectUrlProcess.join()
             Urls_list = list(Urls_list)
 
             Sub = ClassSubject(Urls_list, District_Code)
@@ -237,5 +228,4 @@ def globalGetGradeBook(District_Code, Username, Password, Student: int, Subject:
 
             page = c.get(url).text
 
-            print(url)
             return page
