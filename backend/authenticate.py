@@ -6,44 +6,68 @@ from multiprocessing import Process, Manager
 import re
 import requests
 from bs4 import BeautifulSoup
-from OrderedSet import OrderedSet
 
 
 class ClassSubject:
-    def __init__(self, urlList, districtCode):
+    '''
+    A class for sorting each subject and choosing the subject. Utilized in subjectGradeBook().
+    '''
+    def __init__(self, urlList: list, districtCode: str):
         self.districtCode = districtCode
-        self.students = OrderedSet([])
-        self.classes = OrderedSet([])
-        self.terms = OrderedSet([])
+        self.students = []
+        self.classes = [[]]
+        self.terms = []
 
+        # Variable in order to know how to split up Nested List
+        self.tempTerms = 1
+
+        # Looping over each Url in urlList to split up each variable
         for url in urlList:
             self.link = url.split('?')[1]
             self.studentID, self.classID, self.termID = self.link.split('&')
             self.studentID, self.classID, self.termID = self.studentID.split(
                 '=')[1], self.classID.split('=')[1], self.termID.split('=')[1]
 
-            self.students.add(self.studentID)
-            self.classes.add(self.classID)
-            self.terms.add(self.termID)
+            self.termID = int(self.termID)
 
-        self.students = list(self.students)
-        self.classes = list(self.classes)
+            if self.studentID in self.students:
+                pass
+            else:
+                self.students.append(self.studentID)
+
+            # Checks to see if the incoming classes list for the QUARTER was already existing
+            if self.termID == self.tempTerms:
+                # If the quarter exists, append class id to the correct nested list
+                self.classes[self.termID - 1].append(self.classID)
+            else:
+                # If the quarter does not exist, set tempTerms to the new termID. Then append an empty nested list and append classID to that.
+                self.tempTerms = self.termID
+                self.classes.append([])
+                self.classes[self.termID - 1].append(self.classID)
+
 
     def getGradeUrl(self, student: int, classID: int, termID: int):
-        self.Class = self.classes[classID]
+        '''
+        Function for getting the specific grade book's url of a subject
+        '''
+        self.Class = self.classes[termID - 1][classID]
         self.Student = self.students[student]
         self.Term = termID
 
+        # Input variables into renweb's url
         self.url = f"https://{self.districtCode.lower()}.client.renweb.com/pwr/NAScopy/Gradebook/GradeBookProgressReport-PW.cfm?District={self.districtCode}&StudentID={self.Student}&ClassID={self.Class}&TermID={self.Term}&SchoolCode={self.districtCode.split('-')[0]}"
 
         return self.url
 
     def getGradeList(self):
+        '''
+        Function which returns the list of classes.
+        '''
         return self.classes
 
-def Auth(District_Code, Username, Password, c):
+def Auth(District_Code: str, Username: str, Password: str, c):
     '''
-    Base Auth Method
+    Base Auth Method which authenticates the user with the Renweb Servers.
     '''
     District_Code = District_Code.upper()
     Client_Code = District_Code.lower()
@@ -51,7 +75,10 @@ def Auth(District_Code, Username, Password, c):
     Submit = "Login"
     formMethod = "login"
     url = f"https://{Client_Code}.client.renweb.com/pwr/"
+    # Use the request object(c) to get the login form of specific school.
     c.get(url)
+
+    # Data that will be sent to authenticate.
     login_data = {
         "DistrictCode": District_Code,
         "UserName": Username,
@@ -60,40 +87,78 @@ def Auth(District_Code, Username, Password, c):
         "Submit": Submit,
         "formMethod": formMethod,
     }
+
+    # Post the login data to attempt to authenticate
     c.post(url, data=login_data)
 
 
-def Login(District_Code, Username, Password):
+def Login(District_Code: str, Username: str, Password: str):
     '''
     The first logon method for authenticating
     '''
+    Client_Code = District_Code.lower()
     try:
+        # Opens request session
         with requests.Session() as c:
+
+            # Authenticate with Renweb Server
             Auth(District_Code, Username, Password, c)
+
+            # Tries to get a url which will be accessible to AUTHENTICATED users only
             urlpath = c.get(
                 f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"
             )
 
+            # If not redirected, means you are authenticated
             if (urlpath.url == f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"):
 
+                # Pull in page data and parse it
                 page = c.get(
-                    f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm").text
+                    f"https://{Client_Code}.client.renweb.com/pwr/school/").text
 
                 soup = BeautifulSoup(page, 'lxml')
 
-                Name = soup.find("div", {"class": "pwr_user-name"})
-                Calendar = soup.find("")
+                # Find the name of the user in text form
+                Name = soup.find("div", {"class": "pwr_user-name"}).text
 
-                return Name.text
+                # Find table of body that includes school events
+                eventsRows = soup.find(id='school_events').find("tbody").find_all("tr")
+
+                # Variable for storing events
+                eventList = []
+
+                for rows in eventsRows:
+                    # For each row, find all the data in each table (td)
+                    tds = rows.find_all("td")
+
+                    # Get dates and events in text form
+                    date = [i.text for i in tds]
+
+                    # Strip out tabs, newlines, and tabs again (To make it clean)
+                    date = list(map(lambda s: s.strip("\t"), date))
+                    date = list(map(lambda s: s.strip("\n"), date))
+                    date = list(map(lambda s: s.strip("\t"), date))
+
+                    # Date variable will be a list of dates and events ["12/12/2021", "Future"]
+                    # Change that into a dictionary and apppend into variable for storing events
+                    event = {date[0]: date[1]}
+                    eventList.append(event)
+
+                # Return back the real name and eventList
+                return Name, eventList
 
             else:
+                # Returns -1 if credentials are incorrect
                 return -1
     except:
+        # Returns negative 2 if there a Network Error or wrong District Code
         return -2
 
 
-
 def GetData(Client_Code, Request_Object, foolist):
+    '''
+    Get the lists of subjects that the students have
+    '''
     page = Request_Object.get(
         f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"
     ).text

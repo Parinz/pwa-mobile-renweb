@@ -30,13 +30,13 @@ async def root():
 # Authentication Protocol
 @app.get("/auth/{Client_Code}/{Username}/{Password}", response_class=ORJSONResponse)
 async def logon(Client_Code, Username, Password):
-    Status = Login(Client_Code, Username, Password)
+    Status, Calendar = Login(Client_Code, Username, Password)
     if Status == -1:
         return {"Status": "Wrong Username/Password"}
     elif Status == -2:
         return {"Status": "Network Error or Wrong District Code"}
     else:
-        return {"Name": Status}
+        return {"Name": Status, "Calendar": Calendar}
 
 
 @app.get('/auth/{Client_Code}/{Username}/{Password}/getData', response_class=ORJSONResponse)
