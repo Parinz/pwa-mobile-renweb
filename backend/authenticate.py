@@ -1,8 +1,6 @@
 '''
 This is a module using to authenticate with the RENWEB Frontend
 '''
-
-from multiprocessing import Process, Manager
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -45,6 +43,8 @@ class ClassSubject:
                 self.classes.append([])
                 self.classes[self.termID - 1].append(self.classID)
 
+        print(self.classes)
+
 
     def getGradeUrl(self, student: int, classID: int, termID: int):
         '''
@@ -53,6 +53,8 @@ class ClassSubject:
         self.Class = self.classes[termID - 1][classID]
         self.Student = self.students[student]
         self.Term = termID
+
+        self.Class
 
         # Input variables into renweb's url
         self.url = f"https://{self.districtCode.lower()}.client.renweb.com/pwr/NAScopy/Gradebook/GradeBookProgressReport-PW.cfm?District={self.districtCode}&StudentID={self.Student}&ClassID={self.Class}&TermID={self.Term}&SchoolCode={self.districtCode.split('-')[0]}"
@@ -65,7 +67,7 @@ class ClassSubject:
         '''
         return self.classes
 
-def Auth(District_Code: str, Username: str, Password: str, c):
+def Auth(District_Code: str, Username: str, Password: str, c: requests.Session):
     '''
     Base Auth Method which authenticates the user with the Renweb Servers.
     '''
@@ -155,77 +157,118 @@ def Login(District_Code: str, Username: str, Password: str):
         return -2
 
 
-def getSubjectList(Client_Code, Request_Object, foolist):
+def getSubjectUrls(District_Code: str, Request_Object: requests.Session, foolist: list) -> list:
     '''
-    Get the lists of subjects that the students have
+    Get every subject's url in order to access the gradebook
     '''
-    page = Request_Object.get(
-        f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm"
-    ).text
-    page = BeautifulSoup(page, 'lxml')
-    page = page.find_all("table")
-    for tables in page:
-        g_list = []
-        tableBody = tables.find_all("tbody")
-        for tr in tableBody:
-            for foo in tr.find_all("tr"):
-                td = foo.find_all("td")
-                row = [i.text for i in td]
-                row = list(map(lambda s: s.strip("\n"), row))
-                g_list.append(row)
-        foolist.append(g_list)
-
-
-def getSubjectUrls(District_Code, Request_Object, foolist):
+    # Get Website Address and access it
     Client_Code = District_Code.lower()
     page = Request_Object.get(
         f"https://{Client_Code}.client.renweb.com/pwr/student/index.cfm").text
+
+    # Use BeautifulSoup to parse the web page
     page = BeautifulSoup(page, 'lxml')
+
+    # Find the tables storing links to gradebook.
     page = page.find_all("table")
     for tables in page:
+        # Find the table body (<tbody> tag in HTML)
         tableBody = tables.find_all("tbody")
         for tr in tableBody:
+            # Find every row in the table body
             for foo in tr.find_all("tr"):
+                # Find all link tags (<a>) that links to the specifc *grades.cfm document* that gradebooks are stored
+                # Using Regex
                 for link in foo.findAll('a', attrs={'href': re.compile("^grades.cfm")}):
+
+                    # For each <a> tag get the href that has the actuall link
                     link = link.get('href')
-                    full_link = f"https://{Client_Code}.client.renweb.com/pwr/student/" + link
-                    foolist.append(full_link)
+                    foolist.append(link)
     return foolist
 
 
-def getAllClassesList(District_Code, Username, Password):
-    with Manager() as manager:
-        with requests.Session() as c:
-            Auth(District_Code, Username, Password, c)
+def getSubjectList(District_Code: str, Request_Object: requests.Session, foolist: list) -> list:
+    '''
+    Get the lists of subjects that the students have
+    '''
+    # Get school's website address and access it 
+    page = Request_Object.get(
+        f"https://{District_Code.lower()}.client.renweb.com/pwr/student/index.cfm"
+    ).text
 
-            Grade_list = manager.list()
+    # Put the html into a parser
+    page = BeautifulSoup(page, 'lxml')
 
-            getSubjectListProcess = Process(
-                target=getSubjectList, args=(District_Code.lower(), c, Grade_list))
-            getSubjectListProcess.start()
+    # Find every table in the web page.
+    page = page.find_all("table")
+    for tables in page:
+        # Temporary list that will be used to store grades for one quarter (one table)
+        g_list = []
+
+        # Find every table in the tables
+        tableBody = tables.find_all("tbody")
+
+        for tr in tableBody:
+            # For each table body find all rows
+            for foo in tr.find_all("tr"):
+                # Find the tabl data in each row
+                td = foo.find_all("td")
+
+                # Get the text version of the table data
+                row = [i.text for i in td]
+
+                # Strip of newline characters
+                row = list(map(lambda s: s.strip("\n"), row))
+
+                # Similar to getSubjectUrls()
+                for link in foo.findAll('a', attrs={'href': re.compile("^grades.cfm")}):
+                    link = link.get('href')
+
+                    # We only want class ID from the url
+                    classID = int(link.split("&")[1].split("=")[1])
+
+                    # Append the class ID to each of the rows
+                    row.append(classID)
+
+                    # Append the row (class and grade) to the list
+                    g_list.append(row)
+
+        # Sort classes list according to the last element of the list which is the classID
+        g_list.sort(key=lambda element: element[-1])
+
+        # Remove the classID after sorting
+        for grades in g_list:
+            grades.pop()
+
+        # Finally append the sorted list into the final list
+        foolist.append(g_list)
+
+    # Return the list
+    return foolist
 
 
-            getSubjectListProcess.join()
-            return list(Grade_list)
+def getAllClassesList(District_Code: str, Username: str, Password: str) -> list:
+    with requests.Session() as c:
+        Auth(District_Code, Username, Password, c)
+
+        classGradeList = []
+
+        classGradeList = getSubjectList(District_Code.lower(), c, classGradeList)
+
+        return classGradeList
 
 
-def getSubjectGradeBook(District_Code, Username, Password, Student: int, Subject: int, Term: int):
-    with Manager() as manager:
-        with requests.Session() as c:
-            Auth(District_Code, Username, Password, c)
+def getSubjectGradeBook(District_Code: str, Username: str, Password: str, Student: int, Subject: int, Term: int) -> str:
+    with requests.Session() as c:
+        Auth(District_Code, Username, Password, c)
 
-            Urls_list = manager.list()
+        Urls_list = []
 
-            getSubjectUrlProcess = Process(
-                target=getSubjectUrls, args=(District_Code, c, Urls_list))
-            getSubjectUrlProcess.start()
+        Urls_list = getSubjectUrls(District_Code, c, Urls_list)
 
-            getSubjectUrlProcess.join()
-            Urls_list = list(Urls_list)
+        Sub = ClassSubject(Urls_list, District_Code)
+        url = Sub.getGradeUrl(Student, Subject, Term)
 
-            Sub = ClassSubject(Urls_list, District_Code)
-            url = Sub.getGradeUrl(Student, Subject, Term)
+        page = c.get(url).text
 
-            page = c.get(url).text
-
-            return page
+        return page
