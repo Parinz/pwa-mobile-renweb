@@ -182,7 +182,9 @@ def getSubjectUrls(District_Code: str, Request_Object: requests.Session) -> list
     # Use BeautifulSoup to parse the web page
     page = BeautifulSoup(page, "lxml")
 
-    # Find the tables storing links to gradebook.  page = page.find_all("table")
+    # Find the tables storing links to gradebook.  
+    page = page.find_all("table")
+
     for tables in page:
         # Find the table body (<tbody> tag in HTML)
         tableBody = tables.find_all("tbody")
