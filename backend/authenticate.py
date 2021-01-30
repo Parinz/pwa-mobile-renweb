@@ -3,8 +3,8 @@ This is a module using to authenticate with the RENWEB Frontend
 '''
 import re
 import requests
+from typing import Union
 from bs4 import BeautifulSoup
-
 
 class ClassSubject:
     '''
@@ -67,7 +67,7 @@ class ClassSubject:
         '''
         return self.classes
 
-def Auth(District_Code: str, Username: str, Password: str, c: requests.Session):
+def Auth(District_Code: str, Username: str, Password: str, c: requests.Session) -> None:
     '''
     Base Auth Method which authenticates the user with the Renweb Servers.
     '''
@@ -93,8 +93,7 @@ def Auth(District_Code: str, Username: str, Password: str, c: requests.Session):
     # Post the login data to attempt to authenticate
     c.post(url, data=login_data)
 
-
-def Login(District_Code: str, Username: str, Password: str):
+def Login(District_Code: str, Username: str, Password: str) -> Union[int, tuple, list]:
     '''
     The first logon method for authenticating
     '''
@@ -156,11 +155,13 @@ def Login(District_Code: str, Username: str, Password: str):
         # Returns negative 2 if there a Network Error or wrong District Code
         return -2
 
-
-def getSubjectUrls(District_Code: str, Request_Object: requests.Session, foolist: list) -> list:
+def getSubjectUrls(District_Code: str, Request_Object: requests.Session) -> list:
     '''
     Get every subject's url in order to access the gradebook
     '''
+    # Initiate variable that stores list for every quarter
+    foolist = []
+
     # Get Website Address and access it
     Client_Code = District_Code.lower()
     page = Request_Object.get(
@@ -169,8 +170,7 @@ def getSubjectUrls(District_Code: str, Request_Object: requests.Session, foolist
     # Use BeautifulSoup to parse the web page
     page = BeautifulSoup(page, 'lxml')
 
-    # Find the tables storing links to gradebook.
-    page = page.find_all("table")
+    # Find the tables storing links to gradebook.  page = page.find_all("table")
     for tables in page:
         # Find the table body (<tbody> tag in HTML)
         tableBody = tables.find_all("tbody")
@@ -186,11 +186,13 @@ def getSubjectUrls(District_Code: str, Request_Object: requests.Session, foolist
                     foolist.append(link)
     return foolist
 
-
-def getSubjectList(District_Code: str, Request_Object: requests.Session, foolist: list) -> list:
+def getSubjectList(District_Code: str, Request_Object: requests.Session) -> list:
     '''
     Get the lists of subjects that the students have
     '''
+    # Initialize Varible for storing subject list
+    foolist = []
+
     # Get school's website address and access it 
     page = Request_Object.get(
         f"https://{District_Code.lower()}.client.renweb.com/pwr/student/index.cfm"
@@ -246,29 +248,41 @@ def getSubjectList(District_Code: str, Request_Object: requests.Session, foolist
     # Return the list
     return foolist
 
-
 def getAllClassesList(District_Code: str, Username: str, Password: str) -> list:
+    '''
+    Main function that will be utilized to Authenticate and pull data from Renweb Servers
+    '''
+    # Open a request session
     with requests.Session() as c:
+        # Authenticate with Renweb server
         Auth(District_Code, Username, Password, c)
 
-        classGradeList = []
+        # Get the subject list
+        classGradeList = getSubjectList(District_Code, c)
 
-        classGradeList = getSubjectList(District_Code.lower(), c, classGradeList)
-
+        # Return the subject's list
         return classGradeList
 
-
 def getSubjectGradeBook(District_Code: str, Username: str, Password: str, Student: int, Subject: int, Term: int) -> str:
+    '''
+    Get the html of the specific subject grade book.
+    '''
+    # Open a request session
     with requests.Session() as c:
+        # Authenticate with renweb servers
         Auth(District_Code, Username, Password, c)
 
-        Urls_list = []
+        # Initialize Urls_list varible to store the url
+        Urls_list = getSubjectUrls(District_Code, c)
 
-        Urls_list = getSubjectUrls(District_Code, c, Urls_list)
-
+        # Put the urlList and district code into the ClassSubject class.
         Sub = ClassSubject(Urls_list, District_Code)
+
+        # Get the subject grade book's url from the class using the index
         url = Sub.getGradeUrl(Student, Subject, Term)
 
+        # Access the url and store it in a variable
         page = c.get(url).text
 
+        # Return the raw html
         return page
