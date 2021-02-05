@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
@@ -48,3 +49,7 @@ async def get_data(Client_Code, Username, Password):
 @app.get('/auth/{Client_Code}/{Username}/{Password}/reportCard/{Student}/{Subject}/{Term}', response_class=HTMLResponse)
 async def report(Client_Code, Username, Password, Student: int, Subject: int, Term: int):
     return getSubjectGradeBook(Client_Code, Username, Password, Student, Subject, Term)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host='0.0.0.0')
